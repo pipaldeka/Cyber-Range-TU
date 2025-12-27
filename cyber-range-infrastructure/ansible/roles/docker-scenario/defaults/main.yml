@@ -1,0 +1,22 @@
+# ansible/roles/docker-scenario/defaults/main.yml
+# ================================================
+# PURPOSE: Default values for docker-scenario role
+# ================================================
+
+---
+# Database defaults
+db_user: "webapp_user"
+db_pass: "webapp_pass"
+db_name: "challenge_db"
+
+# Network defaults
+vlan_subnet: "{{ vlan_id | int - 100 }}"
+
+# Container defaults
+container_prefix: "{{ scenario_name }}-{{ student_id }}"
+
+# Scenario type
+scenario_type: "sql"  # Can be: sql, xss, command, upload
+
+# Ports
+web_port: "{{ (8000 | string) ~ (vlan_id | string) }}"

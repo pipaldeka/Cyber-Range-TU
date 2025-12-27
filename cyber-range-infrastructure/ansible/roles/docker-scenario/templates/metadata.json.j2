@@ -1,0 +1,13 @@
+{
+  "student_id": "{{ student_id }}",
+  "scenario_name": "{{ scenario_name }}",
+  "vlan_id": {{ vlan_id }},
+  "flag": "{{ flag }}",
+  "created_at": "{{ ansible_date_time.iso8601 }}",
+  "expires_at": "{{ (ansible_date_time.epoch | int + (4 * 3600)) | strftime('%Y-%m-%dT%H:%M:%SZ') }}",
+  "access": {
+    "web_url": "http://localhost:{{ web_port }}",
+    "webapp_ip": "10.100.{{ vlan_subnet }}.10",
+    "database_ip": "10.100.{{ vlan_subnet }}.11"
+  }
+}

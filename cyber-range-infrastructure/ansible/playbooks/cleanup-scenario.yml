@@ -1,0 +1,40 @@
+# ansible/playbooks/cleanup-scenario.yml
+
+---
+- name: Cleanup Student Scenario
+  hosts: localhost
+  connection: local
+  
+  vars:
+    student_id: "{{ student_id }}"
+    scenario: "{{ scenario }}"
+  
+  tasks:
+    - name: Stop and remove containers
+      docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ scenario }}-webapp-{{ student_id }}"
+        - "{{ scenario }}-db-{{ student_id }}"
+      ignore_errors: yes
+    
+    - name: Remove Docker network
+      docker_network:
+        name: "student-vlan-{{ vlan_id }}"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Remove metadata file
+      file:
+        path: "/tmp/scenario-{{ student_id }}.json"
+        state: absent
+    
+    - name: Archive logs (optional)
+      command: >
+        docker logs {{ scenario }}-webapp-{{ student_id }}
+        > /var/log/cyber-range/{{ student_id }}-{{ ansible_date_time.date }}.log
+      ignore_errors: yes
+    
+    - debug:
+        msg: "Scenario cleanup complete for {{ student_id }}"

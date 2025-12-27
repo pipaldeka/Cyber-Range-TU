@@ -1,0 +1,99 @@
+# ansible/playbooks/configure-scenario.yml
+
+---
+- name: Configure Docker Scenario for Student
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  vars:
+    student_id: "{{ student_id }}"
+    vlan_id: "{{ vlan_id }}"
+    flag: "{{ flag }}"
+    scenario: "{{ scenario }}"
+    webapp_ip: "{{ webapp_ip }}"
+    db_ip: "{{ db_ip }}"
+  
+  tasks:
+    - name: Display scenario information
+      debug:
+        msg:
+          - "Configuring scenario for student: {{ student_id }}"
+          - "VLAN ID: {{ vlan_id }}"
+          - "Scenario: {{ scenario }}"
+          - "Web App IP: {{ webapp_ip }}"
+          - "Database IP: {{ db_ip }}"
+          - "Flag: {{ flag }}"
+    
+    - name: Wait for database container to be ready
+      command: >
+        docker exec {{ scenario }}-db-{{ student_id }}
+        mysqladmin ping -h localhost --silent
+      register: db_check
+      until: db_check.rc == 0
+      retries: 30
+      delay: 2
+      changed_when: false
+    
+    - name: Inject flag into database
+      command: >
+        docker exec {{ scenario }}-db-{{ student_id }}
+        mysql -uwebapp_user -pwebapp_pass challenge_db
+        -e "UPDATE flags SET flag_value='{{ flag }}' WHERE flag_id=1"
+      register: flag_injection
+      changed_when: flag_injection.rc == 0
+    
+    - name: Verify flag was injected
+      command: >
+        docker exec {{ scenario }}-db-{{ student_id }}
+        mysql -uwebapp_user -pwebapp_pass challenge_db
+        -e "SELECT flag_value FROM flags WHERE flag_id=1"
+      register: flag_check
+      changed_when: false
+    
+    - name: Display flag verification
+      debug:
+        msg: "Flag verified: {{ flag_check.stdout }}"
+    
+    - name: Create metadata file
+      copy:
+        dest: "/tmp/scenario-{{ student_id }}.json"
+        content: |
+          {
+            "student_id": "{{ student_id }}",
+            "vlan_id": {{ vlan_id }},
+            "scenario": "{{ scenario }}",
+            "flag": "{{ flag }}",
+            "webapp_ip": "{{ webapp_ip }}",
+            "db_ip": "{{ db_ip }}",
+            "created_at": "{{ ansible_date_time.iso8601 }}",
+            "expires_at": "{{ ansible_date_time.iso8601 | regex_replace('T.*', 'T') }}{{ (ansible_date_time.hour | int + 4) | string }}:{{ ansible_date_time.minute }}:{{ ansible_date_time.second }}Z"
+          }
+    
+    - name: Store flag in centralized database (optional)
+      command: >
+        echo "{{ student_id }},{{ vlan_id }},{{ flag }},{{ ansible_date_time.iso8601 }}"
+        >> /var/log/cyber-range/flags.csv
+      args:
+        creates: /var/log/cyber-range/flags.csv
+    
+    - name: Test web application accessibility
+      uri:
+        url: "http://localhost:{{ 8000 + vlan_id }}"
+        method: GET
+        status_code: 200
+      register: webapp_test
+      retries: 5
+      delay: 3
+      until: webapp_test.status == 200
+    
+    - name: Display access information
+      debug:
+        msg:
+          - "✅ Scenario deployed successfully!"
+          - "Access URL: http://localhost:{{ 8000 + vlan_id }}"
+          - "Target IP: {{ webapp_ip }}"
+          - "Database IP: {{ db_ip }}"
+          - "Flag: {{ flag }}"
+
+

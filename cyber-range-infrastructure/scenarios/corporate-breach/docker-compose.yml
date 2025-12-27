@@ -1,0 +1,37 @@
+# scenarios/corporate-breach/docker-compose.yml
+
+version: '3.8'
+
+services:
+  corporate-server:
+    build: .
+    container_name: corporate-breach-${STUDENT_ID:-test}
+    hostname: cybercorp-internal
+    environment:
+      - DB_HOST=localhost
+      - DB_USER=webapp_user
+      - DB_PASS=webapp_password_123
+      - DB_NAME=corporate_db
+      - FLAG1=FLAG{user_level_access_achieved}
+      - FLAG2=FLAG{database_credentials_compromised}
+      - FLAG3=FLAG{root_access_game_over}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+      - "${SSH_PORT:-2222}:22"
+    networks:
+      scenario_network:
+        ipv4_address: 10.100.${VLAN_SUBNET:-1}.10
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor=unconfined
+    restart: unless-stopped
+
+networks:
+  scenario_network:
+    name: student-vlan-${VLAN_ID:-101}
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.100.${VLAN_SUBNET:-1}.0/24
+          gateway: 10.100.${VLAN_SUBNET:-1}.1
