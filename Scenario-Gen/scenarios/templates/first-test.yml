@@ -1,0 +1,7 @@
+name: "First Test Scenario"
+description: "Basic Struts2 and Redis exploitation"
+
+components:
+  service1: vulhub/struts2/s2-045
+  service2: vulhub/redis/CVE-2022-0543
+

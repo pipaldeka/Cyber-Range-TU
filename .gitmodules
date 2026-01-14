@@ -1,0 +1,3 @@
+[submodule "Scenario-Gen/external/vulhub"]
+	path = Scenario-Gen/external/vulhub
+	url = https://github.com/vulhub/vulhub.git
