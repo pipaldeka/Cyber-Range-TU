@@ -1,0 +1,17 @@
+name: S2 045
+type: web-frontend
+category: vulnerability
+difficulty: medium
+description: 'Auto-imported from Vulhub: vulhub/struts2/s2-045'
+tags:
+- vulhub
+- struts2
+- s2-045
+docker:
+  image_name: s2-045
+  ports:
+  - 8080:8080
+  environment: {}
+source:
+  type: vulhub
+  path: struts2/s2-045
