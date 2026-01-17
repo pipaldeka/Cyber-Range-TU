@@ -1,0 +1,93 @@
+# Detection Rules Configuration
+
+exploit_patterns:
+  - name: "STRUTS2_S2_045"
+    pattern: "Content-Type.*multipart.*ognl"
+    severity: "CRITICAL"
+    technique: "T1190"  # MITRE ATT&CK
+    description: "Apache Struts2 S2-045 exploitation detected"
+    points: 100
+
+  - name: "REVERSE_SHELL_BASH"
+    pattern: "bash.*-i|/dev/tcp"
+    severity: "CRITICAL"
+    technique: "T1059.004"
+    description: "Bash reverse shell detected"
+    points: 150
+
+  - name: "REVERSE_SHELL_NETCAT"
+    pattern: "nc.*-e|ncat.*-e"
+    severity: "CRITICAL"
+    technique: "T1059.004"
+    description: "Netcat reverse shell detected"
+    points: 150
+
+  - name: "PYTHON_REVERSE_SHELL"
+    pattern: "python.*socket.*connect"
+    severity: "HIGH"
+    technique: "T1059.006"
+    description: "Python reverse shell detected"
+    points: 150
+
+  - name: "SQL_INJECTION"
+    pattern: "(SELECT|UNION|INSERT|DROP|UPDATE).*FROM"
+    severity: "MEDIUM"
+    technique: "T1190"
+    description: "SQL injection attempt detected"
+    points: 80
+
+  - name: "DIRECTORY_TRAVERSAL"
+    pattern: '\.\./\.\.'
+    severity: "MEDIUM"
+    technique: "T1083"
+    description: "Directory traversal detected"
+    points: 50
+
+  - name: "PRIVILEGE_ESCALATION"
+    pattern: "sudo|su -|chmod.*4755"
+    severity: "HIGH"
+    technique: "T1068"
+    description: "Privilege escalation attempt"
+    points: 120
+
+suspicious_commands:
+  - name: "PROCESS_MANIPULATION"
+    pattern: "pkill|killall"
+    severity: "MEDIUM"
+    technique: "T1489"
+    description: "Process manipulation detected"
+
+  - name: "USER_CREATION"
+    pattern: "useradd|adduser"
+    severity: "MEDIUM"
+    technique: "T1136"
+    description: "New user creation detected"
+
+  - name: "FIREWALL_MODIFICATION"
+    pattern: "iptables|ufw"
+    severity: "HIGH"
+    technique: "T1562.004"
+    description: "Firewall modification detected"
+
+  - name: "CREDENTIAL_DUMPING"
+    pattern: "cat.*passwd|cat.*shadow|/etc/passwd|/etc/shadow"
+    severity: "HIGH"
+    technique: "T1003"
+    description: "Credential dumping attempt"
+
+flag_patterns:
+  - name: "FLAG_CAPTURE"
+    pattern: 'FLAG\{[^}]+\}'
+    points: 200
+
+  - name: "FLAG_ACCESS"
+    pattern: "cat.*flag|echo.*FLAG"
+    points: 50
+
+anomaly_thresholds:
+  cpu_percent: 90
+  memory_percent: 90
+  network_tx_mb: 100
+  network_rx_mb: 100
+  connections_per_minute: 100
+
